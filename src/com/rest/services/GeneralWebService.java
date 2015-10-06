@@ -75,7 +75,7 @@ public class GeneralWebService {
 	public String addPerson(Persona input) {
 		try {
 			Persona p = input;
-			return "Persona " + p.getNombre() + " agregada!";
+			return "Persona " + p.getNombre() + " agregada!";   
 		}catch(Exception e) {
 			return Parser.objetoAJson(new ApiMessage(ApiMessage.TYPE_ERROR, ApiMessage.CODE_APP_ERROR, "Error al procesar la solicitud")); 
 		}
