@@ -1,5 +1,9 @@
 package com.rest.services;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.Date;
 import java.util.LinkedList;
 
@@ -10,11 +14,17 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.DefaultHttpClient;
 import org.joda.time.DateTime;
 
 import com.rest.security.Hashing;
 import com.rest.services.model.ApiMessage;
 import com.rest.services.model.Persona;
+import com.rest.services.model.UserProfileSubscribe;
 import com.rest.util.Parser;
 
 @Path("")
@@ -75,9 +85,57 @@ public class GeneralWebService {
 	public String addPerson(Persona input) {
 		try {
 			Persona p = input;
-			return "Persona " + p.getNombre() + " agregada!";   
+			return "Persona " + p.getNombre() + " agregada!";
 		}catch(Exception e) {
 			return Parser.objetoAJson(new ApiMessage(ApiMessage.TYPE_ERROR, ApiMessage.CODE_APP_ERROR, "Error al procesar la solicitud")); 
 		}
 	}
+	
+	@POST
+	@Path("continentapi/sendSuscrpt")
+	@Consumes({ MediaType.APPLICATION_JSON })
+	@Produces({ MediaType.APPLICATION_JSON })
+	public String get(String input) {
+	try{
+		String result =  null;
+		//UserProfileSubscribe b = input;
+		HttpClient httpclient = new DefaultHttpClient();
+        HttpPost httpPost = new HttpPost("http://67.208.218.148:80/oneapi/userprofile/v1/notifySubscription");
+        String json = "{\"address\":\"String\",\"eventDateTime\":\"String\",\"groupCode\":\"LOVE\","
+        			+ "\"serviceCode\":\"3030\",\"channel\":\"String\",\"contextData\":\"String\","
+        				+ "\"replyEvent\":false}";
+        
+        StringEntity se = new StringEntity(json);
+        httpPost.setEntity(se);
+        httpPost.setHeader("Accept", "application/json");
+        httpPost.setHeader("Content-type", "application/json");
+
+        HttpResponse httpResponse = httpclient.execute(httpPost);
+        InputStream inputStream = httpResponse.getEntity().getContent();
+
+        if(inputStream != null)
+           result = convertInputStreamToString(inputStream);
+        else
+        	result = "ERROR";
+        
+        return result;
+        }
+        catch (Exception e) {
+			e.printStackTrace();
+			return e.getLocalizedMessage();
+		}
+	}
+	
+	private static String convertInputStreamToString(InputStream inputStream) throws IOException{
+        BufferedReader bufferedReader = new BufferedReader( new InputStreamReader(inputStream));
+        String line = "";
+        String result = "";
+        while((line = bufferedReader.readLine()) != null)
+            result += line;
+ 
+        inputStream.close();
+        return result;
+ 
+    }   
+
 }
